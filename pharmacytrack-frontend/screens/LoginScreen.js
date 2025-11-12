@@ -1,35 +1,33 @@
-// screens/LoginScreen.js
 import React, { useState } from "react";
 import { View, TextInput, Button, Text } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { login } from "../api/apiClient";
+import { useRouter } from "expo-router";
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleLogin = () => {
-    // TODO: integrate with backend auth later
-    navigation.navigate("Dashboard");
+  const handleLogin = async () => {
+    try {
+      const data = await login(email, password);
+      await AsyncStorage.setItem("token", data.access_token);
+      router.push("/dashboard"); // navigate after successful login
+    } catch (err) {
+      setError("Invalid credentials");
+    }
   };
 
   return (
-    <View style={{ padding: 20, marginTop: 100 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 20 }}>
-        PharmacyTrack Login
-      </Text>
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={{ borderWidth: 1, marginBottom: 12, padding: 10 }}
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={{ borderWidth: 1, marginBottom: 12, padding: 10 }}
-      />
+    <View style={{ padding: 20 }}>
+      <Text>Email</Text>
+      <TextInput value={email} onChangeText={setEmail} autoCapitalize="none" />
+      <Text>Password</Text>
+      <TextInput value={password} onChangeText={setPassword} secureTextEntry />
       <Button title="Login" onPress={handleLogin} />
+      {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
     </View>
   );
 }

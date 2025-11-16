@@ -22,6 +22,7 @@ class Medicine(Base):
     unit = Column(String)
     min_stock_level = Column(Integer, default=10)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    batches = relationship("InventoryBatch", back_populates="medicine", cascade="all, delete-orphan")
 
 class InventoryBatch(Base):
     __tablename__ = "inventory_batches"
@@ -34,4 +35,15 @@ class InventoryBatch(Base):
     purchase_price = Column(Float)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    medicine = relationship("Medicine", backref="batches")
+    medicine = relationship("Medicine", back_populates="batches")
+    sales = relationship("Sale", back_populates="batch")
+
+class Sale(Base):
+    __tablename__ = "sales"
+
+    id = Column(Integer, primary_key=True, index=True)
+    batch_id = Column(Integer, ForeignKey("inventory_batches.id"), nullable=False)
+    quantity_sold = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    batch = relationship("InventoryBatch", back_populates="sales")

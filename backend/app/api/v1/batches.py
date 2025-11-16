@@ -26,3 +26,37 @@ def create_batch(
 def list_batches(db: Session = Depends(deps.get_db)):
     batches = db.query(models.InventoryBatch).all()
     return batches
+
+
+# @router.get("/low_stock", response_model=List[schemas.InventoryBatch])
+# def get_low_stock_batches(db: Session = Depends(deps.get_db)):
+
+#     # Example: batches with quantity < 10
+#     low_stock_batches = db.query(models.InventoryBatch).filter(models.InventoryBatch.quantity_available < 10).all()
+#     return low_stock_batches
+
+# @router.get("/low_stock")
+# def low_stock_batches(db: Session = Depends(deps.get_db)):
+#     batches = get_low_stock_batches(db)
+#     return [
+#         {
+#             "id": b.id,
+#             "batch_number": b.batch_number,
+#             "quantity_available": b.quantity_available
+#         }
+#         for b in batches
+#     ]
+
+@router.get("/low_stock")
+def low_stock_batches(db: Session = Depends(deps.get_db)):
+    batches = db.query(models.InventoryBatch).filter(models.InventoryBatch.quantity_available < 10).all()
+    return [
+        {
+            "id": b.id,
+            "batch_number": b.batch_number,
+            "quantity_available": b.quantity_available
+        }
+        for b in batches
+    ]
+
+

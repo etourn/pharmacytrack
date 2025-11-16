@@ -4,30 +4,29 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "../api/apiClient";
 import { useRouter } from "expo-router";
 
-export default function LoginScreen() {
-  const [email, setEmail] = useState("");
+export default function LoginScreen({ navigation }) {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
 
   const handleLogin = async () => {
-    try {
-      const data = await login(email, password);
-      await AsyncStorage.setItem("token", data.access_token);
-      router.push("/dashboard"); // navigate after successful login
-    } catch (err) {
-      setError("Invalid credentials");
+    // call API
+    const response = await fetch("http://127.0.0.1:8000/api/v1/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (response.ok) {
+      navigation.replace("Dashboard");   
+    } else {
+      alert("Login failed");
     }
   };
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text>Email</Text>
-      <TextInput value={email} onChangeText={setEmail} autoCapitalize="none" />
-      <Text>Password</Text>
-      <TextInput value={password} onChangeText={setPassword} secureTextEntry />
+    <View>
       <Button title="Login" onPress={handleLogin} />
-      {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
     </View>
   );
 }
+

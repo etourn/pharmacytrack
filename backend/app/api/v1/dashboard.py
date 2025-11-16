@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.crud.inventory import (
+from app.deps import get_db
+from app.crud import (
     get_low_stock_batches,
     get_medicines_low_stock_summary,
     get_expiring_soon

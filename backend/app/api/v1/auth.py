@@ -6,6 +6,7 @@ from app.schemas import Token, UserCreate, UserOut
 from app.core.security import hash_password, verify_password, create_access_token
 from app.deps import get_db
 from app import models
+from pydantic import BaseModel, EmailStr
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -25,11 +26,34 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     db.refresh(user)
     return user
 
+# def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+#     # OAuth2PasswordRequestForm gives fields 'username' and 'password'
+#     user = db.query(models.User).filter(models.User.email == form_data.username).first()
+#     if not user or not verify_password(form_data.password, user.password_hash):
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect credentials")
+#     token = create_access_token(subject=str(user.id))
+#     return {"access_token": token, "token_type": "bearer"}
+
+class LoginInput(BaseModel):
+    email: EmailStr
+    password: str
+
+# @router.post("/login", response_model=Token)
+# def login(data: LoginInput, db: Session = Depends(get_db)):
+#     user = db.query(models.User).filter(models.User.email == data.email).first()
+#     if not user or not verify_password(data.password, user.password_hash):
+#         raise HTTPException(status_code=401, detail="Incorrect credentials")
+
+#     token = create_access_token(subject=str(user.id))
+    # return {"access_token": token, "token_type": "bearer"}
+
 @router.post("/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # OAuth2PasswordRequestForm gives fields 'username' and 'password'
-    user = db.query(models.User).filter(models.User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
+def login(data: LoginInput, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == data.email).first()
+    if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect credentials")
+
     token = create_access_token(subject=str(user.id))
     return {"access_token": token, "token_type": "bearer"}
+
+
